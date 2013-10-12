@@ -5,14 +5,14 @@ import copy, pycosat
 def v(i,j,k):
 	return 81*i+9*j+k
 
-def element_clause(i,j,clause_set):
+def element_clause(clause_set):
 	# Uniqueness: one cell only points to one value
-	base = range(-81*i-9*j-9, -81*i-9*j)
-#	clause_set = []
-	for k in range(0,9):
-		temp = copy.deepcopy(base)
-		temp[k] = -1*temp[k]
-		clause_set.append(temp)
+	for i in range(9):
+		for j in range(9):
+			clause_set.append([v(i,j,d) for d in range(1,10)])
+			for d in range(1,10):
+				for dp in range(d+1,10):
+					clause_set.append([-v(i,j,d), -v(i,j,dp)])
 	return clause_set
 	
 def row_clause(i,clause_set):
@@ -53,8 +53,7 @@ def solve(sudoku_mat):
 	for i in range(9):
 		row_clause(i, clause_set)
 		col_clause(i, clause_set)
-		for j in range(9):
-			element_clause(i,j, clause_set)
+	element_clause(clause_set)
 	block_clause(0,0,clause_set)
 	block_clause(0,3,clause_set)
 	block_clause(0,6,clause_set)
@@ -64,7 +63,7 @@ def solve(sudoku_mat):
 	block_clause(6,0,clause_set)
 	block_clause(6,3,clause_set)
 	block_clause(6,6,clause_set)
-	print clause_set
+	print len(clause_set)
 	sol = set(pycosat.solve(clause_set))
 	#print sol
 	
@@ -80,6 +79,8 @@ def solve(sudoku_mat):
 
 if __name__ == '__main__':
 	#block_clause(6,6)
+	from pprint import pprint
+	
 	hard = [[0, 2, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 6, 0, 0, 0, 0, 3],
             [0, 7, 4, 0, 8, 0, 0, 0, 0],
@@ -90,4 +91,14 @@ if __name__ == '__main__':
             [5, 0, 0, 0, 0, 9, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 4, 0]]
 	solve(hard)
-	#print(hard)
+	pprint(hard)
+	assert [[1, 2, 6, 4, 3, 7, 9, 5, 8],
+            [8, 9, 5, 6, 2, 1, 4, 7, 3],
+            [3, 7, 4, 9, 8, 5, 1, 2, 6],
+            [4, 5, 7, 1, 9, 3, 8, 6, 2],
+            [9, 8, 3, 2, 4, 6, 5, 1, 7],
+            [6, 1, 2, 5, 7, 8, 3, 9, 4],
+            [2, 6, 9, 3, 1, 4, 7, 8, 5],
+            [5, 4, 8, 7, 6, 9, 2, 3, 1],
+            [7, 3, 1, 8, 5, 2, 6, 4, 9]] == hard
+
