@@ -64,6 +64,14 @@ def solve(sudoku_mat):
 	block_clause(6,3,clause_set)
 	block_clause(6,6,clause_set)
 	print len(clause_set)
+	outfile = file('sudoku.cnf','w')
+	outfile.write('p cnf 729 '+str(len(clause_set)))
+	for clause in clause_set:
+		string = ''
+		for var in clause:
+			string = string + str(var) + ' '
+		string = string[:-1]
+		outfile.write('\n'+string+' 0')
 	sol = set(pycosat.solve(clause_set))
 	#print sol
 	
