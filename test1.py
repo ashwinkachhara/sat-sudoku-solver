@@ -2,47 +2,51 @@
 
 import copy, pycosat
 
+sudo_size = 9;
+sudo_size_square = int(sudo_size ** 2) ;
+sudo_size_sqrt = int(sudo_size ** 0.5);
+
 def v(i,j,k):
-	return 81*i+9*j+k
+	return (sudo_size_square)*i+(sudo_size)*j+k
 
 def element_clause(clause_set):
 	# Uniqueness: one cell only points to one value
-	for i in range(9):
-		for j in range(9):
-			clause_set.append([v(i,j,d) for d in range(1,10)])
-			for d in range(1,10):
-				for dp in range(d+1,10):
+	for i in range(sudo_size):
+		for j in range(sudo_size):
+			clause_set.append([v(i,j,d) for d in range(1,(sudo_size+1))])
+			for d in range(1,(sudo_size+1)):
+				for dp in range(d+1,(sudo_size+1)):
 					clause_set.append([-v(i,j,d), -v(i,j,dp)])
 	return clause_set
 	
 def row_clause(i,clause_set):
 #	clause_set = []
-	for k in range(1,10):
-		temp = range(81*i+k, 81*(i+1)+1, 9)
+	for k in range(1,(sudo_size+1)):
+		temp = range(sudo_size_square*i+k, sudo_size_square*(i+1)+1, sudo_size)
 		clause_set.append(temp)
 	return clause_set
 
 def col_clause(j,clause_set):
 #	clause_set = []
-	for k in range(1,10):
-		temp = range(9*j+k, 81*8 + 9*(j+1)+1, 81)
+	for k in range(1,(sudo_size+1)):
+		temp = range(sudo_size*j+k, sudo_size_square*(sudo_size-1) + sudo_size*(j+1)+1, sudo_size_square)
 		clause_set.append(temp)
 	return clause_set
 
 def block_clause(i,j,clause_set):
 #	clause_set = []
-	for k in range(1,10):
+	for k in range(1,(sudo_size+1)):
 		temp = []
-		for k1 in range(3):
-			for k2 in range(3):
+		for k1 in range(sudo_size_sqrt):
+			for k2 in range(sudo_size_sqrt ):
 				temp.append(v(i+k1,j+k2,k))
 		clause_set.append(temp)
 	return clause_set
 	
 def sudoku_vals(sudoku_mat):
 	clause_set = []
-	for i in range(1,10):
-		for j in range(1, 10):
+	for i in range(1,(sudo_size+1)):
+		for j in range(1, (sudo_size+1)):
 			val = sudoku_mat[i-1][j-1]
 			if val:
 				clause_set.append([v(i-1,j-1,val)])
@@ -50,22 +54,16 @@ def sudoku_vals(sudoku_mat):
 	
 def solve(sudoku_mat):
 	clause_set = sudoku_vals(sudoku_mat);
-	for i in range(9):
+	for i in range(sudo_size):
 		row_clause(i, clause_set)
 		col_clause(i, clause_set)
 	element_clause(clause_set)
-	block_clause(0,0,clause_set)
-	block_clause(0,3,clause_set)
-	block_clause(0,6,clause_set)
-	block_clause(3,0,clause_set)
-	block_clause(3,3,clause_set)
-	block_clause(3,6,clause_set)
-	block_clause(6,0,clause_set)
-	block_clause(6,3,clause_set)
-	block_clause(6,6,clause_set)
+	for i in range(sudo_size_sqrt):
+		for j in range(sudo_size_sqrt):
+			block_clause(i*sudo_size_sqrt,j*sudo_size_sqrt,clause_set)
 	print len(clause_set)
 	outfile = file('sudoku.cnf','w')
-	outfile.write('p cnf 729 '+str(len(clause_set)))
+	outfile.write('p cnf '+str(sudo_size**3)+str(len(clause_set)))
 	for clause in clause_set:
 		string = ''
 		for var in clause:
@@ -76,12 +74,12 @@ def solve(sudoku_mat):
 	#print sol
 	
 	def read_cell(i,j):
-		for d in range(1,10):
+		for d in range(1,sudo_size+1):
 			if v(i,j,d) in sol:
 				return d
 	
-	for i in range(9):
-		for j in range(9):
+	for i in range(sudo_size):
+		for j in range(sudo_size):
 			sudoku_mat[i][j] = read_cell(i,j)
 	
 
