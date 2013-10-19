@@ -71,7 +71,7 @@ def solve(sudoku_mat, sudoku_sz):
 			block_clause(i*sudo_size_sqrt,j*sudo_size_sqrt,clause_set)
 	print len(clause_set)
 	outfile = file('sudoku.cnf','w')
-	outfile.write('p cnf '+str(sudo_size**3)+str(len(clause_set)))
+	outfile.write('p cnf '+str(sudo_size**3)+' '+str(len(clause_set)))
 	for clause in clause_set:
 		string = ''
 		for var in clause:
